@@ -1,1 +1,84 @@
+body {
+    background-color: #1a1a1a;
+    color: #ffffff;
+    font-family: Helvetica, Arial, sans-serif;
+    text-align: center;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    height: 100vh;
+}
 
+.app-container {
+    width: 100%;
+    max-width: 600px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+h1 {
+    font-size: 1.5rem;
+    color: #ff4d4d; /* Pain Train Red */
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+#status-indicator {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+/* Status Colors */
+.status-work {
+    background-color: #2ecc71; /* Green for Go */
+    color: #000;
+}
+.status-rest {
+    background-color: #3498db; /* Blue for Rest */
+    color: #fff;
+}
+.status-ready {
+    background-color: #444;
+}
+
+#timer-display {
+    font-size: 6rem;
+    font-weight: bold;
+    margin: 20px 0;
+}
+
+.card {
+    background-color: #333;
+    border: 2px solid #555;
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+}
+
+#exercise-name {
+    font-size: 2.5rem;
+    margin: 0;
+    color: #f1f1f1;
+}
+
+button {
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    padding: 20px 40px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    border-radius: 50px;
+    cursor: pointer;
+    width: 100%;
+}
+
+button:active {
+    background-color: #cc0000;
+}
