@@ -1,78 +1,105 @@
-// The Exercise Deck
 const exercises = [
-    "Burpees",
-    "Mountain Climbers",
-    "Jump Squats",
-    "Push-ups",
-    "High Knees",
-    "Plank",
-    "Lunges",
-    "Jumping Jacks",
-    "Russian Twists",
-    "Bicycle Crunches"
+    "Burpees", "Mountain Climbers", "Jump Squats", 
+    "Push-ups", "High Knees", "Plank", 
+    "Lunges", "Jumping Jacks", "Russian Twists", 
+    "Bicycle Crunches", "Leg Raises", "Flutter Kicks"
 ];
 
 // Variables
-let timer;
+let timer; // The interval timer
+let totalTimer; // The total time tracker
 let timeLeft;
-let isWorking = false; // false = rest, true = work
-let round = 0;
+let totalSeconds = 0;
+let nextExerciseName = ""; // Stores the upcoming card
 
 // HTML Elements
 const timerDisplay = document.getElementById('timer-display');
+const totalTimeDisplay = document.getElementById('total-time');
 const statusDisplay = document.getElementById('status-indicator');
 const exerciseDisplay = document.getElementById('exercise-name');
+const cardLabel = document.getElementById('card-label');
 const btn = document.getElementById('start-btn');
+const workInput = document.getElementById('work-input');
+const restInput = document.getElementById('rest-input');
+const settingsArea = document.getElementById('settings-area');
 
 // Start Button Logic
 btn.addEventListener('click', () => {
     if (btn.innerText === "Start Engine") {
         startWorkout();
     } else {
-        location.reload(); // Quick way to reset everything
+        location.reload(); // Reset everything
     }
 });
 
 function startWorkout() {
     btn.innerText = "Stop Train";
-    startRest(); // We usually start with a "Get Ready" rest period
+    
+    // Disable inputs so you can't change time mid-workout
+    workInput.disabled = true;
+    restInput.disabled = true;
+    settingsArea.style.opacity = "0.5";
+
+    // Start Total Time Counter
+    totalTimer = setInterval(() => {
+        totalSeconds++;
+        let m = Math.floor(totalSeconds / 60);
+        let s = totalSeconds % 60;
+        totalTimeDisplay.innerText = `Total Time: ${formatTime(m)}:${formatTime(s)}`;
+    }, 1000);
+
+    // Pre-select the first exercise
+    pickNextExercise();
+    
+    // Go straight to Rest (Get Ready phase)
+    startRest();
 }
 
 function startWork() {
-    isWorking = true;
-    timeLeft = 20; // Tabata Standard: 20s Work
+    // 1. Get user custom time
+    timeLeft = parseInt(workInput.value); 
     
-    // Pick a random exercise
-    const randomExercise = exercises[Math.floor(Math.random() * exercises.length)];
-    exerciseDisplay.innerText = randomExercise;
+    // 2. Update Display with the exercise we picked during rest
+    updateVisuals("WORK", "status-work");
+    cardLabel.innerText = "DO THIS NOW:";
+    exerciseDisplay.innerText = nextExerciseName;
     
-    updateVisuals("WORK IT!", "status-work");
+    // 3. Run Timer
     runTimer(() => startRest());
 }
 
 function startRest() {
-    isWorking = false;
-    timeLeft = 10; // Tabata Standard: 10s Rest
+    // 1. Get user custom time
+    timeLeft = parseInt(restInput.value);
     
-    updateVisuals("REST / PREPARE", "status-rest");
-    exerciseDisplay.innerText = "Next Card Coming...";
+    // 2. Pick the NEXT exercise now, so we can show it
+    pickNextExercise();
+
+    // 3. Update Display
+    updateVisuals("REST", "status-rest");
+    cardLabel.innerText = "UP NEXT:";
+    exerciseDisplay.innerText = nextExerciseName; // Show the preview
+
+    // 4. Run Timer
     runTimer(() => startWork());
+}
+
+function pickNextExercise() {
+    nextExerciseName = exercises[Math.floor(Math.random() * exercises.length)];
 }
 
 function updateVisuals(text, cssClass) {
     statusDisplay.innerText = text;
-    // Remove old classes and add the new one
     statusDisplay.classList.remove('status-work', 'status-rest', 'status-ready');
     statusDisplay.classList.add(cssClass);
 }
 
 function runTimer(onComplete) {
-    // Update immediately so we don't wait 1 second for the first number
-    timerDisplay.innerText = formatTime(timeLeft);
+    timerDisplay.innerText = formatTimeSimple(timeLeft);
 
     timer = setInterval(() => {
         timeLeft--;
-        timerDisplay.innerText = formatTime(timeLeft);
+        timerDisplay.innerText = formatTimeSimple(timeLeft);
 
         if (timeLeft <= 0) {
             clearInterval(timer);
@@ -81,7 +108,12 @@ function runTimer(onComplete) {
     }, 1000);
 }
 
-// Helper to make single digits look nice (e.g., 09 instead of 9)
-function formatTime(seconds) {
-    return seconds < 10 ? `00:0${seconds}` : `00:${seconds}`;
+// Helper: Formats 00:09 (Standard clock)
+function formatTime(val) {
+    return val < 10 ? `0${val}` : val;
+}
+
+// Helper: Formats 9 or 20 (Simple seconds for the big timer)
+function formatTimeSimple(val) {
+    return val < 10 ? `0${val}` : val;
 }
