@@ -9,10 +9,10 @@
 <body>
 
     <div class="app-container">
-        <div id="total-time">Total Time: 00:00</div>
-
+        
         <header>
             <h1>The Pain Train 🚂💀</h1>
+            <div id="total-time">Time Left: 00:00</div>
         </header>
 
         <main>
@@ -29,17 +29,35 @@
         <footer>
             <div class="settings-container" id="settings-area">
                 <div class="setting-group">
-                    <label>Work (sec)</label>
+                    <label>Work</label>
                     <input type="number" id="work-input" value="20">
                 </div>
                 <div class="setting-group">
-                    <label>Rest (sec)</label>
+                    <label>Rest</label>
                     <input type="number" id="rest-input" value="10">
+                </div>
+                <div class="setting-group">
+                    <label>Rounds</label>
+                    <input type="number" id="rounds-input" value="12">
                 </div>
             </div>
 
+            <button id="edit-btn" class="secondary-btn">Edit Deck / Exercises</button>
             <button id="start-btn">Start Engine</button>
         </footer>
+    </div>
+
+    <div id="editor-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3>Manage Deck</h3>
+            <div class="add-exercise-box">
+                <input type="text" id="new-exercise-input" placeholder="New Exercise Name">
+                <button id="add-exercise-btn">+</button>
+            </div>
+            <ul id="exercise-list">
+                </ul>
+            <button id="close-modal-btn">Done</button>
+        </div>
     </div>
 
     <script src="script.js"></script>
