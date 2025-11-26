@@ -1,204 +1,199 @@
-body {
-    background-color: #1a1a1a;
-    color: #ffffff;
-    font-family: Helvetica, Arial, sans-serif;
-    text-align: center;
-    margin: 0;
-    display: flex;
-    justify-content: center;
-    height: 100vh;
+// Initial Deck
+let exercises = [
+    "Burpees", "Mountain Climbers", "Jump Squats", 
+    "Push-ups", "High Knees", "Plank", 
+    "Lunges", "Jumping Jacks", "Russian Twists", 
+    "Bicycle Crunches"
+];
+
+// Variables
+let timer; 
+let totalTimer; 
+let timeLeft;
+let totalTimeLeft; // Seconds remaining in whole workout
+let roundsLeft;
+let nextExerciseName = "";
+
+// HTML Elements
+const timerDisplay = document.getElementById('timer-display');
+const totalTimeDisplay = document.getElementById('total-time');
+const statusDisplay = document.getElementById('status-indicator');
+const exerciseDisplay = document.getElementById('exercise-name');
+const cardLabel = document.getElementById('card-label');
+const btn = document.getElementById('start-btn');
+const workInput = document.getElementById('work-input');
+const restInput = document.getElementById('rest-input');
+const roundsInput = document.getElementById('rounds-input');
+const settingsArea = document.getElementById('settings-area');
+
+// Edit Modal Elements
+const editBtn = document.getElementById('edit-btn');
+const modal = document.getElementById('editor-modal');
+const closeModalBtn = document.getElementById('close-modal-btn');
+const exerciseList = document.getElementById('exercise-list');
+const newExerciseInput = document.getElementById('new-exercise-input');
+const addExerciseBtn = document.getElementById('add-exercise-btn');
+
+// --- APP LOGIC ---
+
+btn.addEventListener('click', () => {
+    if (btn.innerText === "Start Engine") {
+        startWorkout();
+    } else {
+        location.reload(); 
+    }
+});
+
+function startWorkout() {
+    // 1. Setup Variables
+    const workTime = parseInt(workInput.value);
+    const restTime = parseInt(restInput.value);
+    roundsLeft = parseInt(roundsInput.value);
+    
+    // Calculate Total Time: (Work + Rest) * Rounds
+    totalTimeLeft = (workTime + restTime) * roundsLeft;
+    
+    // 2. UI Updates
+    btn.innerText = "Stop Train";
+    editBtn.style.display = 'none'; // Hide edit button during workout
+    settingsArea.style.pointerEvents = 'none'; // Freeze settings
+    settingsArea.style.opacity = '0.5';
+
+    // 3. Start Total Time Countdown
+    updateTotalTimeDisplay();
+    totalTimer = setInterval(() => {
+        if(totalTimeLeft > 0) {
+            totalTimeLeft--;
+            updateTotalTimeDisplay();
+        }
+    }, 1000);
+
+    // 4. Start the Loop
+    pickNextExercise();
+    startRest(); // We always start with a prep/rest period
 }
 
-.app-container {
-    width: 100%;
-    max-width: 600px;
-    padding: 10px 20px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-evenly;
+function startWork() {
+    if (roundsLeft <= 0) {
+        finishWorkout();
+        return;
+    }
+
+    timeLeft = parseInt(workInput.value); 
+    updateVisuals("WORK IT!", "status-work");
+    
+    cardLabel.innerText = "CURRENT EXERCISE";
+    cardLabel.classList.remove("label-highlight");
+    exerciseDisplay.innerText = nextExerciseName; 
+    
+    runTimer(() => startRest());
 }
 
-header { margin-bottom: 10px; }
+function startRest() {
+    // If we just finished the last round, don't rest again, just finish.
+    // (Optional: standard Tabata often ends on last work rep. We'll stick to Work->Rest loop for now).
+    if (roundsLeft <= 0) {
+        finishWorkout();
+        return;
+    }
 
-h1 {
-    font-size: 1.5rem;
-    color: #ff4d4d;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    margin: 0;
+    timeLeft = parseInt(restInput.value);
+    
+    // Logic: Decrement rounds here (as we are prepping for the next one)
+    roundsLeft--; 
+    pickNextExercise();
+
+    updateVisuals("REST", "status-rest");
+    
+    cardLabel.innerText = "UP NEXT: " + nextExerciseName;
+    cardLabel.classList.add("label-highlight");
+    exerciseDisplay.innerText = "REST"; 
+
+    runTimer(() => startWork());
 }
 
-#total-time {
-    font-size: 1.2rem;
-    color: #888;
-    margin-top: 5px;
-    font-weight: normal;
+function finishWorkout() {
+    clearInterval(timer);
+    clearInterval(totalTimer);
+    updateVisuals("WORKOUT COMPLETE", "status-done");
+    exerciseDisplay.innerText = "Great Job!";
+    cardLabel.innerText = "DONE";
+    timerDisplay.innerText = "00:00";
+    btn.innerText = "Reset";
 }
 
-#status-indicator {
-    font-size: 2.5rem;
-    font-weight: bold;
-    padding: 10px;
-    border-radius: 8px;
-    text-transform: uppercase;
+function pickNextExercise() {
+    // Simple random shuffle logic
+    nextExerciseName = exercises[Math.floor(Math.random() * exercises.length)];
 }
 
-.status-work { background-color: #2ecc71; color: #000; }
-.status-rest { background-color: #3498db; color: #fff; }
-.status-ready { background-color: #444; }
-.status-done { background-color: #ff4d4d; color: #fff; }
+function runTimer(onComplete) {
+    timerDisplay.innerText = formatTimeSimple(timeLeft);
+    if (timer) clearInterval(timer);
 
-#timer-display {
-    font-size: 7rem;
-    font-weight: bold;
-    margin: 10px 0;
-    line-height: 1;
+    timer = setInterval(() => {
+        timeLeft--;
+        timerDisplay.innerText = formatTimeSimple(timeLeft);
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            onComplete();
+        }
+    }, 1000);
 }
 
-.card {
-    background-color: #333;
-    border: 2px solid #555;
-    border-radius: 15px;
-    padding: 20px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-    min-height: 150px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+// --- EDIT MODAL LOGIC ---
+
+editBtn.addEventListener('click', () => {
+    renderExerciseList();
+    modal.classList.remove('hidden');
+    modal.style.display = 'flex';
+});
+
+closeModalBtn.addEventListener('click', () => {
+    modal.classList.add('hidden');
+    modal.style.display = 'none';
+});
+
+addExerciseBtn.addEventListener('click', () => {
+    const name = newExerciseInput.value.trim();
+    if (name) {
+        exercises.push(name);
+        newExerciseInput.value = "";
+        renderExerciseList();
+    }
+});
+
+function renderExerciseList() {
+    exerciseList.innerHTML = "";
+    exercises.forEach((ex, index) => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+            <span>${ex}</span>
+            <button class="delete-btn" onclick="removeExercise(${index})">✖</button>
+        `;
+        exerciseList.appendChild(li);
+    });
 }
 
-#card-label {
-    color: #aaa;
-    font-size: 1rem;
-    margin-bottom: 10px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-weight: bold;
+// Needs to be global so HTML onclick can see it
+window.removeExercise = function(index) {
+    exercises.splice(index, 1);
+    renderExerciseList();
 }
 
-.label-highlight { color: #3498db !important; }
+// --- HELPERS ---
 
-#exercise-name {
-    font-size: 2.2rem;
-    margin: 0;
-    color: #f1f1f1;
+function updateVisuals(text, cssClass) {
+    statusDisplay.innerText = text;
+    statusDisplay.classList.remove('status-work', 'status-rest', 'status-ready', 'status-done');
+    statusDisplay.classList.add(cssClass);
 }
 
-.settings-container {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin-bottom: 15px;
+function updateTotalTimeDisplay() {
+    const m = Math.floor(totalTimeLeft / 60);
+    const s = totalTimeLeft % 60;
+    totalTimeDisplay.innerText = `Time Left: ${formatTime(m)}:${formatTime(s)}`;
 }
 
-.setting-group {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.setting-group label {
-    font-size: 0.8rem;
-    color: #aaa;
-    margin-bottom: 5px;
-}
-
-input[type="number"] {
-    background-color: #333;
-    border: 1px solid #555;
-    color: white;
-    font-size: 1.5rem;
-    width: 50px;
-    text-align: center;
-    padding: 10px;
-    border-radius: 8px;
-}
-
-button {
-    background-color: #ff4d4d;
-    color: white;
-    border: none;
-    padding: 20px;
-    font-size: 1.5rem;
-    font-weight: bold;
-    border-radius: 50px;
-    cursor: pointer;
-    width: 100%;
-    margin-bottom: 10px;
-}
-
-button:active { background-color: #cc0000; }
-
-.secondary-btn {
-    background-color: #444;
-    font-size: 1rem;
-    padding: 10px;
-    margin-bottom: 10px;
-}
-
-/* Modal Styles for Edit Menu */
-.hidden { display: none; }
-
-.modal {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background-color: rgba(0,0,0,0.9);
-    z-index: 100;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.modal-content {
-    background-color: #222;
-    padding: 20px;
-    border-radius: 15px;
-    width: 90%;
-    max-width: 400px;
-    max-height: 80vh;
-    overflow-y: auto;
-    text-align: left;
-}
-
-.add-exercise-box {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-}
-
-#new-exercise-input {
-    flex-grow: 1;
-    padding: 10px;
-    border-radius: 5px;
-    border: none;
-}
-
-#add-exercise-btn {
-    width: auto;
-    padding: 0 20px;
-    margin: 0;
-}
-
-#exercise-list {
-    list-style: none;
-    padding: 0;
-}
-
-#exercise-list li {
-    background: #333;
-    margin-bottom: 5px;
-    padding: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-radius: 5px;
-}
-
-.delete-btn {
-    background: transparent;
-    color: #ff4d4d;
-    font-size: 1.2rem;
-    width: auto;
-    padding: 0 10px;
-    margin: 0;
-}
+function formatTime(val) { return val < 10 ? `0${val}` : val; }
+function formatTimeSimple(val) { return val < 10 ? `0${val}` : val; }
