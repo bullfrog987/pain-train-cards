@@ -9,6 +9,8 @@
 <body>
 
     <div class="app-container">
+        <div id="total-time">Total Time: 00:00</div>
+
         <header>
             <h1>The Pain Train 🚂💀</h1>
         </header>
@@ -19,12 +21,23 @@
             <div id="timer-display">00:00</div>
 
             <div class="card">
+                <p id="card-label">CURRENT EXERCISE</p>
                 <h2 id="exercise-name">Draw a Card</h2>
-                <p id="rep-count">--</p>
             </div>
         </main>
 
         <footer>
+            <div class="settings-container" id="settings-area">
+                <div class="setting-group">
+                    <label>Work (sec)</label>
+                    <input type="number" id="work-input" value="20">
+                </div>
+                <div class="setting-group">
+                    <label>Rest (sec)</label>
+                    <input type="number" id="rest-input" value="10">
+                </div>
+            </div>
+
             <button id="start-btn">Start Engine</button>
         </footer>
     </div>
